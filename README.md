@@ -41,12 +41,12 @@ This system automates the entire process by:
 
 ## 🛠️ Tech Stack
 
-- n8n Cloud
+- n8n Cloud (Built on Free Trial)
 - OpenAI API
 - Google Business Profile API
 - Telegram Bot API
 - Google Sheets API
-- JavaScript (n8n Expressions & Functions)
+- JavaScript (n8n Expressions)
 
 ---
 
@@ -75,7 +75,7 @@ Generate Reply
       ↓
 Rating Classification
       ↓
- ┌─────────────┬──────────────┐
+ ┌─────────────┬
  │             │
 Low Rating   Positive Rating
  │             │
@@ -94,13 +94,11 @@ Approval       Posting
 
 ```text
 AI-Review-Management-System/
-│
 ├── README.md
+├── LICENSE
 ├── AI Review Automation.json
-├── architecture.png
-├── screenshots/
-│      ├── workflow.png
-│      └── telegram-approval.png
+├── AI-Review-Architecture.png
+└── workflow-screenshot.png
 ```
 
 ---
@@ -123,6 +121,10 @@ AI-Review-Management-System/
 - Multi-Agent Architecture
 - Knowledge Base Integration (RAG)
 - Multi-language Response Generation
+- Docker Self-Hosted Deployment
+- PostgreSQL Logging
+- Multi-Tenant Support
+- Analytics Dashboard
 - WhatsApp Notifications
 
 ---
