@@ -52,7 +52,7 @@ This system automates the entire process by:
 
 ## 🏗️ System Architecture
 
-![Architecture](architecture.png)
+![Architecture](AI-Review-Architecture.png)
 
 ---
 
