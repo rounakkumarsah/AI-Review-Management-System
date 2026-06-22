@@ -58,7 +58,7 @@ This system automates the entire process by:
 
 ## 🔄 Workflow Screenshot
 
-![Workflow](screenshots/workflow.png)
+![Workflow](workflow-screenshot.png)
 
 ---
 
