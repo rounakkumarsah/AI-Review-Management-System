@@ -1,0 +1,659 @@
+{
+  "name": "AI Review Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "account": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "location": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleBusinessProfileTrigger",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        -48
+      ],
+      "id": "2008e64a-2b5c-455c-a899-71fde6a15004",
+      "name": "Google Business Profile Trigger",
+      "credentials": {
+        "googleBusinessProfileOAuth2Api": {
+          "id": "OIi7g5xwMkMjpale",
+          "name": "Google Business Profile account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate a reply for this Google review.\n\nReview:\n{{$json.comment}}\n\nStar Rating:\n{{$json.starRating}}",
+        "options": {
+          "systemMessage": "You are a professional customer support assistant for local businesses.\n\nYour job is to generate short, natural, and polite Google review replies.\n\nRules:\n- Sound human and friendly.\n- Keep replies concise.\n- Never use emojis.\n- For negative reviews, apologize politely and show empathy.\n- For positive reviews, thank the customer warmly.\n- Do not invent fake promises or discounts."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        32,
+        -48
+      ],
+      "id": "8ac8cca4-aef6-4c0f-a63d-3f7a60974ad1",
+      "name": "AI Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a73947b8-b56c-48a7-b743-f7dde41593d5",
+              "leftValue": "={{$json.rating}}",
+              "rightValue": "={{ 2 }}",
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        384,
+        -48
+      ],
+      "id": "1d4a4a7b-b285-4a08-83b1-6da099baeaa6",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b6d65d9f-d9c1-4d6a-8f8d-fd2c158ca5f9",
+              "name": "Review ID",
+              "value": "={{ $json.reviewId }}",
+              "type": "string"
+            },
+            {
+              "id": "7b7bc473-d6c4-46ec-afb4-07443036cfb1",
+              "name": "Reviewer Name",
+              "value": "={{ $json.reviewer.displayName }}",
+              "type": "string"
+            },
+            {
+              "id": "f131fc7f-345a-43fa-a857-39194a5e7c01",
+              "name": "Rating",
+              "value": "={{ $json.starRating }}",
+              "type": "number"
+            },
+            {
+              "id": "5cf2577f-1422-491f-8a4e-0a1505e2eeb3",
+              "name": "Review Text",
+              "value": "={{ $json.comment }}",
+              "type": "string"
+            },
+            {
+              "id": "22b12de2-449e-48f9-a54c-a0ce1d3e62f3",
+              "name": "Location",
+              "value": "={{ $json.location }}",
+              "type": "string"
+            },
+            {
+              "id": "6a671965-dacf-4329-be1a-da7241c235f9",
+              "name": "Review Name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -192,
+        -48
+      ],
+      "id": "76ec2483-f58d-4247-bf3c-9b3d9de3d730",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.7,
+          "timeout": 60000,
+          "maxRetries": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        176
+      ],
+      "id": "750a07ac-a115-413a-a9b4-09efd835f51a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "tcFwXYW4WvjrgJm6",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1KIZKLdVGcdvptDD8dHyVNiDulF2zo_Sw_4qUFP_VgsY",
+          "mode": "list",
+          "cachedResultName": "Low Rating Review",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KIZKLdVGcdvptDD8dHyVNiDulF2zo_Sw_4qUFP_VgsY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Low Rating",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KIZKLdVGcdvptDD8dHyVNiDulF2zo_Sw_4qUFP_VgsY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Posted Reply": "={{ $json.aiReply }}",
+            "Status": "={{ $json.status }}",
+            "AI Reply": "={{ $json.aiReply }}",
+            "Review": "={{ $json.comment }}",
+            "Rating": "={{ $json.starRating }}",
+            "Name": "={{ $json.reviewer.displayName }}",
+            "ID": "={{ $json.reviewId }}",
+            "Date": "={{ $now.format('dd-MM-yy') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Review",
+              "displayName": "Review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Reply",
+              "displayName": "AI Reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Posted Reply",
+              "displayName": "Posted Reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1056,
+        -144
+      ],
+      "id": "101ac199-4733-43bc-ab58-b817cbb53676",
+      "name": "Low Rating Review",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "hVsFCnt4yT6MLd7r",
+          "name": "Google Sheets OAuth2 API"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "19eOFFV70ZpFovicuy3quOOufhxzZZCuLS0_5gju94Dg",
+          "mode": "list",
+          "cachedResultName": "High Rating Review",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19eOFFV70ZpFovicuy3quOOufhxzZZCuLS0_5gju94Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "High Rating",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19eOFFV70ZpFovicuy3quOOufhxzZZCuLS0_5gju94Dg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.format('dd-MM-yy') }}",
+            "Name": "={{ $json.reviewer.displayName }}",
+            "Posted Reply": "={{ $json.PostedReply }}",
+            "AI Reply": "={{ $json.aiReply }}",
+            "Rating": "={{ $json.starRating }}",
+            "ID": "={{ $json.reviewId }}",
+            "Review": "={{ $json.comment }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Review",
+              "displayName": "Review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "AI Reply",
+              "displayName": "AI Reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Posted Reply",
+              "displayName": "Posted Reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        816,
+        48
+      ],
+      "id": "10366363-a868-47a9-b737-0b57d5c3a764",
+      "name": "High Rating Review",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "hVsFCnt4yT6MLd7r",
+          "name": "Google Sheets OAuth2 API"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "review",
+        "operation": "reply",
+        "account": {
+          "__rl": true,
+          "value": "={{ $json.name.split('/')[1] }}",
+          "mode": "name"
+        },
+        "location": {
+          "__rl": true,
+          "value": "={{ $json.name.split('/')[3] }}",
+          "mode": "name"
+        },
+        "review": {
+          "__rl": true,
+          "value": "={{ $json.reviewId }}",
+          "mode": "id"
+        },
+        "reply": "={{ $json.aiReply }}",
+        "requestOptions": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.googleBusinessProfile",
+      "typeVersion": 1,
+      "position": [
+        832,
+        -144
+      ],
+      "id": "eed06235-8e3f-49a0-b195-b1cc122da484",
+      "name": "Low Rating Review Reply",
+      "retryOnFail": true,
+      "credentials": {
+        "googleBusinessProfileOAuth2Api": {
+          "id": "OIi7g5xwMkMjpale",
+          "name": "Google Business Profile account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "review",
+        "operation": "reply",
+        "account": {
+          "__rl": true,
+          "value": "={{ $json.name.split('/')[1] }}",
+          "mode": "name"
+        },
+        "location": {
+          "__rl": true,
+          "value": "={{ $json.name.split('/')[3] }}",
+          "mode": "name"
+        },
+        "review": {
+          "__rl": true,
+          "value": "={{ $json.reviewId }}",
+          "mode": "id"
+        },
+        "reply": "={{ $json.aiReply }}",
+        "requestOptions": {
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.googleBusinessProfile",
+      "typeVersion": 1,
+      "position": [
+        608,
+        48
+      ],
+      "id": "7e79aba3-6826-4c35-ac69-b4cf241ed659",
+      "name": "High Rating Review Reply",
+      "retryOnFail": true,
+      "credentials": {
+        "googleBusinessProfileOAuth2Api": {
+          "id": "OIi7g5xwMkMjpale",
+          "name": "Google Business Profile account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "696203125",
+        "message": "=⚠️ Low Rating Review Approval Needed\n\nCustomer: {{ $json.reviewer.displayName }}\n\nRating: {{ $json.starRating }}\n\nReview:\n{{ $json.comment }}\n\nAI Reply:\n{{ $json.aiReply }}\n\nApprove this reply?",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "resumeAmount": 45,
+              "resumeUnit": "minutes"
+            }
+          },
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        608,
+        -144
+      ],
+      "id": "3b8209b1-4fda-4bf4-8b03-177a959cb87d",
+      "name": "Low Rating Approval",
+      "webhookId": "20663220-c7d9-4e07-a450-0f48365ab864",
+      "credentials": {
+        "telegramApi": {
+          "id": "6j1H4wD74XlhOdcT",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Business Profile Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Low Rating Approval",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "High Rating Review Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Low Rating Review Reply": {
+      "main": [
+        [
+          {
+            "node": "Low Rating Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "High Rating Review Reply": {
+      "main": [
+        [
+          {
+            "node": "High Rating Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Low Rating Approval": {
+      "main": [
+        [
+          {
+            "node": "Low Rating Review Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Kolkata",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "availableInMCP": false
+  },
+  "versionId": "178bb6df-e641-40b2-910d-a8cd79e1d909",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cd4c4a2d89ab336a20e26b1033681d4b30d54c934c3670b77dffa98530cc16f7"
+  },
+  "id": "J6Hdfuu4trIExPZO",
+  "tags": []
+}
